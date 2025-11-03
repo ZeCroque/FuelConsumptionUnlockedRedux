@@ -1,0 +1,15 @@
+*.ignore.*
+*.pex
+*.esm
+*.ba2
+*.dll
+
+meta.ini
+
+SF1Edit Backups/
+SF1Edit Cache/
+Backup/
+Release/
+.xmake/
+build/
+vs*/

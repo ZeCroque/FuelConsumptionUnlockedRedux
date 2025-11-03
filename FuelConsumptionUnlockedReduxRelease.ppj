@@ -1,0 +1,13 @@
+<?xml version='1.0'?>
+ <PapyrusProject xmlns="PapyrusProject.xsd"
+   Flags="H:\Games\steamapps\common\Starfield\Data\Scripts\Source\Starfield_Papyrus_Flags.flg"
+   Output="D:\dev\Mods\Starfield\RoleplayersAlternateStartv\Data\Scripts"
+ >
+   <Imports>
+     <Import>H:\Games\steamapps\common\Starfield\Data\Scripts\Source</Import>
+     <Import>D:\dev\Mods\Starfield\RoleplayersAlternateStart\Data\Scripts\Source</Import>
+   </Imports>
+   <Folders>
+     <Folder>.\Data\Scripts\Source</Folder>
+   </Folders>
+ </PapyrusProject>

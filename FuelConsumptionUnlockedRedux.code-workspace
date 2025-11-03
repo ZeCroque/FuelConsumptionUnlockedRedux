@@ -1,0 +1,18 @@
+{
+	"folders": 
+	[
+		{
+			"path": "H:/Games/steamapps/common/Starfield/Data/Scripts/Source"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../Logs"
+		}
+	],
+	"settings": 
+	{
+		"papyrus.version": "starfield"
+	}
+}
