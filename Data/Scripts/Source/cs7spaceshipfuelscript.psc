@@ -136,37 +136,20 @@ Event OnTimer(Int aiTimerID)
   EndIf
   If aiTimerID == ModTimer ; #DEBUG_LINE_NO:150
     MyUnityRuns = Game.GetPlayer().GetValueInt(PlayerUnityTimesEntered) ; #DEBUG_LINE_NO:151
-    If MQ101.IsStageDone(1305) || MQ101.IsStageDone(1310) || MyUnityRuns > 0 ; #DEBUG_LINE_NO:152
-      bModEnabled = CS7_ModEnabled.GetValue() as Bool ; #DEBUG_LINE_NO:154
-      If !bModEnabled ; #DEBUG_LINE_NO:155
-        If iCountdown == 10 ; #DEBUG_LINE_NO:156
-          Debug.Notification("Press [FUEL] to activate mod.") ; #DEBUG_LINE_NO:157
-          iCountdown -= 1 ; #DEBUG_LINE_NO:158
-        ElseIf iCountdown == 0 ; #DEBUG_LINE_NO:159
-          iCountdown = 10 ; #DEBUG_LINE_NO:160
-        Else
-          iCountdown -= 1 ; #DEBUG_LINE_NO:162
-        EndIf
-        Self.StartTimer(5.0, ModTimer) ; #DEBUG_LINE_NO:164
+    bModEnabled = CS7_ModEnabled.GetValue() as Bool ; #DEBUG_LINE_NO:154
+    If !bModEnabled ; #DEBUG_LINE_NO:155
+      If iCountdown == 10 ; #DEBUG_LINE_NO:156
+        Debug.Notification("Press [FUEL] to activate mod.") ; #DEBUG_LINE_NO:157
+        iCountdown -= 1 ; #DEBUG_LINE_NO:158
+      ElseIf iCountdown == 0 ; #DEBUG_LINE_NO:159
+        iCountdown = 10 ; #DEBUG_LINE_NO:160
       Else
-        Game.RequestAutoSave() ; #DEBUG_LINE_NO:166
-        Debug.Notification("Fuel consumption is now enabled.") ; #DEBUG_LINE_NO:167
+        iCountdown -= 1 ; #DEBUG_LINE_NO:162
       EndIf
-    ElseIf MyUnityRuns == 0 ; #DEBUG_LINE_NO:169
-      Self.StartTimer(20.0, AutoActivateMod) ; #DEBUG_LINE_NO:171
+      Self.StartTimer(5.0, ModTimer) ; #DEBUG_LINE_NO:164
     Else
-      Self.StartTimer(20.0, ModTimer) ; #DEBUG_LINE_NO:173
-    EndIf
-  EndIf
-  If aiTimerID == AutoActivateMod ; #DEBUG_LINE_NO:176
-    If MQ101.IsStageDone(1305) || MQ101.IsStageDone(1310) ; #DEBUG_LINE_NO:177
-      CS7_ModEnabled.SetValue(1.0) ; #DEBUG_LINE_NO:178
-      Utility.Wait(0.100000001) ; #DEBUG_LINE_NO:179
-      bModEnabled = CS7_ModEnabled.GetValue() as Bool ; #DEBUG_LINE_NO:180
-      Game.RequestAutoSave() ; #DEBUG_LINE_NO:181
-      Debug.Notification("Fuel consumption is now enabled.") ; #DEBUG_LINE_NO:182
-    Else
-      Self.StartTimer(20.0, AutoActivateMod) ; #DEBUG_LINE_NO:184
+      Game.RequestAutoSave() ; #DEBUG_LINE_NO:166
+      Debug.Notification("Fuel consumption is now enabled.") ; #DEBUG_LINE_NO:167
     EndIf
   EndIf
 EndEvent

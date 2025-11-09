@@ -65,13 +65,9 @@ Event OnTimer(Int aiTimerID)
     CS7_LockMessage.Show(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) ; #DEBUG_LINE_NO:65
   EndIf
   If aiTimerID == ModStartTimer ; #DEBUG_LINE_NO:67
-    If MQ101.IsStageDone(1305) || MQ101.IsStageDone(1310) || Game.GetPlayer().GetValueInt(PlayerUnityTimesEntered) > 0 ; #DEBUG_LINE_NO:69
-      bAddPerk = True ; #DEBUG_LINE_NO:70
-      Utility.Wait(0.100000001) ; #DEBUG_LINE_NO:71
-      Self.AddFuelFillerPerk() ; #DEBUG_LINE_NO:72
-    Else
-      Self.StartTimer(20.0, ModStartTimer) ; #DEBUG_LINE_NO:74
-    EndIf
+    bAddPerk = True ; #DEBUG_LINE_NO:70
+    Utility.Wait(0.100000001) ; #DEBUG_LINE_NO:71
+    Self.AddFuelFillerPerk() ; #DEBUG_LINE_NO:72
   EndIf
 EndEvent
 
