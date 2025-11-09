@@ -8,11 +8,9 @@ Int LocationTimer = 10
 Int ModTimer = 20
 Int MyUnityRuns
 ObjectReference[] OutpostWorkshopIndex
-Int StarMapTimer = 40
-Bool bAbortGravJump
 Bool bGravJump
+Bool bForceOpen
 Bool bModEnabled
-Bool bStarMapOpen
 Int currentOutpostID
 Float fFuelConsumptionValue = 0.0
 Float fFuelOutpostValue = 0.0
@@ -77,6 +75,10 @@ Group ShipAndFuel
   { autofill }
 EndGroup
 
+Static property XMarker Auto Const Mandatory
+GlobalVariable Property CS7_IsManualRoute Mandatory Const Auto
+GlobalVariable Property CS7_LastFuelCost Mandatory Const Auto
+
 Group OtherRequired
   ActorValue Property PlayerUnityTimesEntered Auto
   GlobalVariable Property CS7_ModEnabled Auto
@@ -105,6 +107,9 @@ Event OnQuestInit()
   Self.RegisterForMenuOpenCloseEvent("GalaxyStarMapMenu") ; #DEBUG_LINE_NO:106
   bModEnabled = False ; #DEBUG_LINE_NO:107
   Self.StartTimer(5.0, ModTimer) ; #DEBUG_LINE_NO:108
+  CassiopeiaPapyrusExtender.RegisterForNativeEvent("CS7SpaceShipFuelScript", "StarMapMenu_ExecuteRoute")
+  CassiopeiaPapyrusExtender.RegisterForNativeEvent("CS7SpaceShipFuelScript", "OnPlayerPlotRoute")
+  Debug.Trace("FCU: registered")
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
@@ -115,18 +120,7 @@ Event Actor.OnPlayerLoadGame(Actor akSender)
   EndIf
 EndEvent
 
-Function RouteExecute(Float sFuelConsumption, Float sMaxFuelRange)
-  fFuelConsumptionValue = sFuelConsumption ; #DEBUG_LINE_NO:126
-EndFunction
-
-Function RouteCalculationCallback(Float fuelConsVal)
-  fFuelConsumptionValue = fuelConsVal ; #DEBUG_LINE_NO:133
-EndFunction
-
 Event OnTimer(Int aiTimerID)
-  If aiTimerID == StarMapTimer ; #DEBUG_LINE_NO:140
-    bStarMapOpen = False ; #DEBUG_LINE_NO:141
-  EndIf
   If aiTimerID == LocationTimer ; #DEBUG_LINE_NO:143
     If Game.GetPlayer().GetCurrentLocation().HasKeyword(LocTypeOutpost) ; #DEBUG_LINE_NO:144
       Self.StartTimer(60.0, LocationTimer) ; #DEBUG_LINE_NO:145
@@ -154,24 +148,30 @@ Event OnTimer(Int aiTimerID)
   EndIf
 EndEvent
 
+Function StarMapMenu_ExecuteRoute() Global
+	Debug.Trace("FCU: Route executed")
+  (Game.GetFormFromFile(0x825,"SpaceShipFuelMod.esp") as GlobalVariable).SetValueInt(1)
+EndFunction
+
+Function OnPlayerPlotRoute(ObjectReference akHomeshipRef, Int aeFailedPlotReason, Int aiJumps, Float afShipGravJumpRange, Float afDistance, Float afCargoWeight, Float afCargoCapacity, Float afFuelConsumption, Float afMaxFuel) global
+  (Game.GetFormFromFile(0x826,"SpaceShipFuelMod.esp") as GlobalVariable).SetValue(afFuelConsumption)
+EndFunction
+
 Event OnMenuOpenCloseEvent(String asMenuName, Bool abOpening)
   If asMenuName == "GalaxyStarMapMenu" && bModEnabled ; #DEBUG_LINE_NO:191
-    If abOpening ; #DEBUG_LINE_NO:192
-      Self.CancelTimer(StarMapTimer) ; #DEBUG_LINE_NO:193
-      bStarMapOpen = True ; #DEBUG_LINE_NO:194
+    If abOpening
+      If(bForceOpen)
+        Debug.Trace("FCU: forcing map")
+        bForceOpen = False
+        fFuelConsumptionValue = -1.0
+        While(fFuelConsumptionValue == -1.0 || fFuelConsumptionValue == 0.0)
+          fFuelConsumptionValue = CassiopeiaPapyrusExtender.GetPlayerSpaceshipFuelConsumption()
+        EndWhile      
+        Debug.Trace(fFuelConsumptionValue)
+        CassiopeiaPapyrusExtender.CloseMenu("GalaxyStarMapMenu")
+      EndIf
       Self.CollectHelium3DataForAllOutposts() ; #DEBUG_LINE_NO:195
-      fFuelOutpostValue = 0 as Float ; #DEBUG_LINE_NO:196
-      fFuelConsumptionValue = 0 as Float ; #DEBUG_LINE_NO:197
-      If bAbortGravJump ; #DEBUG_LINE_NO:198
-        Message.ClearHelpMessages() ; #DEBUG_LINE_NO:199
-        CS7_StarMapAbortMessage.ShowAsHelpMessage("None", 0.0, 0.0, 0, "", 0, None) ; #DEBUG_LINE_NO:200
-      EndIf
-    Else
-      If bAbortGravJump ; #DEBUG_LINE_NO:203
-        Message.ClearHelpMessages() ; #DEBUG_LINE_NO:204
-        bAbortGravJump = False ; #DEBUG_LINE_NO:205
-      EndIf
-      Self.StartTimer(3.0, StarMapTimer) ; #DEBUG_LINE_NO:208
+      fFuelOutpostValue = 0 as Float ; #DEBUG_LINE_NO:196B
     EndIf
   EndIf
 EndEvent
@@ -179,20 +179,18 @@ EndEvent
 Event ReferenceAlias.OnShipGravJump(ReferenceAlias akSender, Location aDestination, Int aState)
   If akSender == SQ_PlayerShip.PlayerShip && bModEnabled ; #DEBUG_LINE_NO:215
     bGravJump = aState as Bool ; #DEBUG_LINE_NO:216
-    If aState == 0 && (fFuelConsumptionValue == 0 as Float) && bStarMapOpen == False && bAbortGravJump == False ; #DEBUG_LINE_NO:217
-      bAbortGravJump = True ; #DEBUG_LINE_NO:218
-      playerShipRef = SQ_PlayerShip.PlayerShip.GetShipRef() ; #DEBUG_LINE_NO:219
-      Float fShipFuelTankCapacity = playerShipRef.GetBaseValue(SpaceshipGravJumpFuel) ; #DEBUG_LINE_NO:220
-      Float fShipFuelTankCurrent = playerShipRef.GetValue(SpaceshipGravJumpFuel) ; #DEBUG_LINE_NO:221
-      Float fuelMaxCost = fShipFuelTankCurrent - 10.0 ; #DEBUG_LINE_NO:222
-      Float fuelRandomCost = Utility.RandomFloat(100 as Float, 300 as Float) ; #DEBUG_LINE_NO:223
-      Float fuelAmount = Math.Min(fuelRandomCost, fuelMaxCost) ; #DEBUG_LINE_NO:224
-      randomGravJumpFuelCost = fuelAmount ; #DEBUG_LINE_NO:225
-      Game.ShowGalaxyStarMapMenu() ; #DEBUG_LINE_NO:226
-    EndIf
-    If aState == 1 ; #DEBUG_LINE_NO:228
-      bAbortGravJump = False ; #DEBUG_LINE_NO:229
-    EndIf
+    If aState == 0    
+      Debug.Trace("FCU: jump initiated")
+      If(CS7_IsManualRoute.GetValueInt())
+        fFuelConsumptionValue = CS7_LastFuelCost.GetValue()
+      Else
+        Debug.Trace("FCU: it's a scan mode jump")
+        bForceOpen = True
+        Game.ShowGalaxyStarMapMenu() ; #DEBUG_LINE_NO:226
+      EndIf
+    ElseIf aState == 2
+      CS7_IsManualRoute.SetValueInt(0)
+    EndIf      
   EndIf
 EndEvent
 
@@ -225,6 +223,7 @@ Event ReferenceAlias.OnLocationChange(ReferenceAlias akSender, Location akOldLoc
       EndIf
     EndIf
     If akOldLoc != akNewLoc && bModEnabled ; #DEBUG_LINE_NO:264
+      Debug.Trace("FCU: removed fuel=" + fFuelConsumptionValue)
       Utility.Wait(0.100000001) ; #DEBUG_LINE_NO:265
       If bGravJump || (fFuelConsumptionValue > 0 as Float) ; #DEBUG_LINE_NO:266
         Self.CheckRefuelingAtRegisteredOutposts() ; #DEBUG_LINE_NO:267
