@@ -78,6 +78,7 @@ EndGroup
 Static property XMarker Auto Const Mandatory
 GlobalVariable Property CS7_IsManualRoute Mandatory Const Auto
 GlobalVariable Property CS7_LastFuelCost Mandatory Const Auto
+InputEnableLayer Property InputLayer Auto
 
 Group OtherRequired
   ActorValue Property PlayerUnityTimesEntered Auto
@@ -155,6 +156,16 @@ EndFunction
 
 Function OnPlayerPlotRoute(ObjectReference akHomeshipRef, Int aeFailedPlotReason, Int aiJumps, Float afShipGravJumpRange, Float afDistance, Float afCargoWeight, Float afCargoCapacity, Float afFuelConsumption, Float afMaxFuel) global
   (Game.GetFormFromFile(0x826,"SpaceShipFuelMod.esp") as GlobalVariable).SetValue(afFuelConsumption)
+
+  CS7SpaceShipFuelScript customSelf = (Game.GetFormFromFile(0x800,"SpaceShipFuelMod.esp") as CS7SpaceShipFuelScript)
+  If(aeFailedPlotReason == 0 && afFuelConsumption > (Game.GetForm(0x174A2) as SQ_PlayerShipScript).PlayerShip.GetShipRef().GetValue(Game.GetForm(0x854F) as ActorValue))
+    customSelf.InputLayer = InputEnableLayer.Create()
+    customSelf.InputLayer.EnableGravJump(False)
+    Debug.Trace("Disable fast travel")
+  ElseIf(customSelf.InputLayer)
+    Debug.Trace("Enabled fast travel")
+    customSelf.InputLayer.Delete()
+  EndIf
 EndFunction
 
 Event OnMenuOpenCloseEvent(String asMenuName, Bool abOpening)
