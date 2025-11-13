@@ -51,7 +51,7 @@ EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
   Self.AddFuelFillerPerk() ; #DEBUG_LINE_NO:51
-  If Game.IsPluginInstalled("SpaceShipFuelMod.esm") == False ; #DEBUG_LINE_NO:53
+  If Game.IsPluginInstalled("SpaceShipFuelMod.esp") == False ; #DEBUG_LINE_NO:53
     Self.UnregisterForAllRemoteEvents() ; #DEBUG_LINE_NO:54
     Self.RemoveFuelFillerPerk() ; #DEBUG_LINE_NO:55
     Self.CancelTimer(ShipExitTimer) ; #DEBUG_LINE_NO:56

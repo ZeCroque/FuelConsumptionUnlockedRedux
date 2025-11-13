@@ -114,10 +114,14 @@ Event OnQuestInit()
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
-  If Game.IsPluginInstalled("SpaceShipFuelMod.esm") == False ; #DEBUG_LINE_NO:114
+  If Game.IsPluginInstalled("SpaceShipFuelMod.esp") == False ; #DEBUG_LINE_NO:114
     Self.UnregisterForAllRemoteEvents() ; #DEBUG_LINE_NO:116
     Self.UnregisterForAllMenuOpenCloseEvents() ; #DEBUG_LINE_NO:117
     Self.Stop() ; #DEBUG_LINE_NO:118
+  Else
+    CassiopeiaPapyrusExtender.RegisterForNativeEvent("CS7SpaceShipFuelScript", "StarMapMenu_ExecuteRoute")
+    CassiopeiaPapyrusExtender.RegisterForNativeEvent("CS7SpaceShipFuelScript", "OnPlayerPlotRoute")
+    Debug.Trace("FCU: registered")
   EndIf
 EndEvent
 
